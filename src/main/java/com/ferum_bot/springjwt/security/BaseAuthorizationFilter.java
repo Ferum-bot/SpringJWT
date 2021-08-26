@@ -27,6 +27,10 @@ public class BaseAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if (request.getServletPath().startsWith("/api/refresh/token")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         try {
             doAuthorizationFilter(request, response, filterChain);
@@ -42,7 +46,7 @@ public class BaseAuthorizationFilter extends OncePerRequestFilter {
         HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
     ) throws ServletException, IOException {
         var token = ResponseRequestUtil.getRequestAuthorizationToken(request);
-        var userData = JWTUtil.getUserData(token);
+        var userData = JWTUtil.getUserDataFromAccessToken(token);
         var userNickname = userData.userNickname();
         var userRoles = userData.userRoles();
 

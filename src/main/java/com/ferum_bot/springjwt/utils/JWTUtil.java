@@ -2,14 +2,16 @@ package com.ferum_bot.springjwt.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.ferum_bot.springjwt.models.entities.Role;
 import com.ferum_bot.springjwt.models.records.JWTContainer;
 import com.ferum_bot.springjwt.models.records.JWTUserData;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 public class JWTUtil {
 
@@ -26,31 +28,64 @@ public class JWTUtil {
 
     static public JWTContainer getTokens(User user) {
         var userRoles = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+            .map(GrantedAuthority::getAuthority)
+            .toList();
 
-        var accessToken = JWT.create()
-                .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenDuration))
-                .withIssuer(ISSUER_ALIAS)
-                .withClaim(ROLES_ALIAS, userRoles)
-                .sign(signAlgorithm);
+        var accessToken = createAccessToken(
+            user.getUsername(), new Date(System.currentTimeMillis() + accessTokenDuration), userRoles
+        );
 
         var refreshToken = JWT.create()
-                .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenDuration))
-                .withIssuer(ISSUER_ALIAS)
-                .sign(signAlgorithm);
+            .withSubject(user.getUsername())
+            .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenDuration))
+            .withIssuer(ISSUER_ALIAS)
+            .sign(signAlgorithm);
 
         return new JWTContainer(accessToken, refreshToken);
     }
 
-    static public JWTUserData getUserData(String accessToken) {
-        var verifier = JWT.require(signAlgorithm).build();
-        var decodedJWT = verifier.verify(accessToken);
+    static public String getAccessTokenFromRefresh(String refreshToken, com.ferum_bot.springjwt.models.entities.User user) {
+        var decodedJWT = getDecodedToken(refreshToken);
 
+        var refreshExpiresAt = decodedJWT.getExpiresAt();
+        var expectedAccessExpiresAt = new Date(System.currentTimeMillis() + accessTokenDuration);
+        Date actualAccessExpiresAt;
+
+        if (refreshExpiresAt.getTime() < expectedAccessExpiresAt.getTime()) {
+            actualAccessExpiresAt = refreshExpiresAt;
+        } else {
+            actualAccessExpiresAt = expectedAccessExpiresAt;
+        }
+
+        var userNickname = user.getNickname();
+        var userRoles = user.getRoles().stream().map(Role::getName).toList();
+        return createAccessToken(userNickname, actualAccessExpiresAt, userRoles);
+    }
+
+    static public JWTUserData getUserDataFromAccessToken(String accessToken) {
+        var decodedJWT = getDecodedToken(accessToken);
         var userNickname = decodedJWT.getSubject();
         var userRoles = decodedJWT.getClaim(ROLES_ALIAS).asList(String.class);
         return new JWTUserData(userNickname, userRoles);
+    }
+
+    static public String getUserNickFromRefreshToken(String refreshToken) {
+        return getDecodedToken(refreshToken).getSubject();
+    }
+
+    static private DecodedJWT getDecodedToken(String token) {
+        var verifier = JWT.require(signAlgorithm).build();
+        return verifier.verify(token);
+    }
+
+    static private String createAccessToken(
+        String nickname, Date expiresAt, List<String> roles
+    ) {
+        return JWT.create()
+                .withSubject(nickname)
+                .withExpiresAt(expiresAt)
+                .withIssuer(ISSUER_ALIAS)
+                .withClaim(ROLES_ALIAS, roles)
+                .sign(signAlgorithm);
     }
 }
