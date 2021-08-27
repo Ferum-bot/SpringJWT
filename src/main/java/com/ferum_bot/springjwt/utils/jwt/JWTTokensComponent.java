@@ -6,11 +6,13 @@ import org.springframework.security.core.userdetails.User;
 
 public interface JWTTokensComponent {
 
-    public JWTContainer getTokens(User user);
+    JWTContainer getTokens(User user);
 
-    public String getAccessTokenFromRefresh(String refreshToken, com.ferum_bot.springjwt.models.entities.User user);
+    String getAccessTokenFromRefresh(String refreshToken, com.ferum_bot.springjwt.models.entities.User user);
 
-    public JWTUserData getUserDataFromAccessToken(String accessToken);
+    JWTUserData getUserDataFromAccessToken(String accessToken);
 
-    public String getUserNickFromRefreshToken(String refreshToken);
+    String getUserNickFromRefreshToken(String refreshToken);
+
+    Boolean tokenIsExpired(String accessToken);
 }

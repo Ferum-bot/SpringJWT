@@ -1,5 +1,6 @@
 package com.ferum_bot.springjwt.security;
 
+import com.ferum_bot.springjwt.models.dto.ErrorResponse;
 import com.ferum_bot.springjwt.utils.ResponseRequestUtil;
 import com.ferum_bot.springjwt.utils.jwt.JWTTokensComponent;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class BaseAuthorizationFilter extends OncePerRequestFilter {
 
@@ -42,9 +44,10 @@ public class BaseAuthorizationFilter extends OncePerRequestFilter {
             doAuthorizationFilter(request, response, filterChain);
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            ResponseRequestUtil.addValueToResponse(response, "code", SC_FORBIDDEN);
-            ResponseRequestUtil.addValueToResponse(response, "message", exception.getMessage());
+            response.setContentType(APPLICATION_JSON_VALUE);
             response.setStatus(SC_FORBIDDEN);
+            var error = new ErrorResponse(SC_FORBIDDEN, exception.getMessage());
+            ResponseRequestUtil.setErrorResponse(response, error);
         }
     }
 

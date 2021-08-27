@@ -84,6 +84,14 @@ public class HMAC384JWTTokensComponent implements JWTTokensComponent {
         return getDecodedToken(refreshToken).getSubject();
     }
 
+    @Override
+    public Boolean tokenIsExpired(String accessToken) {
+        var decodedToken = getDecodedToken(accessToken);
+        var expiresAt = decodedToken.getExpiresAt();
+
+        return System.currentTimeMillis() > expiresAt.getTime();
+    }
+
     private Algorithm getSignAlgorithm() {
         return Algorithm.HMAC384(secretWord.getBytes(StandardCharsets.UTF_8));
     }

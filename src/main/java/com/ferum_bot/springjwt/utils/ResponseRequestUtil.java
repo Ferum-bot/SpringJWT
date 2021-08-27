@@ -1,6 +1,7 @@
 package com.ferum_bot.springjwt.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferum_bot.springjwt.models.dto.ErrorResponse;
 import com.ferum_bot.springjwt.models.records.JWTContainer;
 import org.springframework.lang.Nullable;
 
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class ResponseRequestUtil {
 
@@ -25,22 +25,27 @@ public class ResponseRequestUtil {
         response.setHeader("Refresh-Token", refreshToken);
     }
 
-    public static void addValueToResponse(
+    public static void setValueToResponse(
         HttpServletResponse response, String alias, String value
     ) throws IOException {
         var resultMap = new HashMap<String, String>();
         resultMap.put(alias, value);
-        response.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), resultMap);
     }
 
-    public static void addValueToResponse(
+    public static void setValueToResponse(
         HttpServletResponse response, String alias, Integer value
     ) throws IOException {
         var resultMap = new HashMap<String, Integer>();
         resultMap.put(alias, value);
-        response.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), resultMap);
+    }
+
+    public static void setErrorResponse(
+        HttpServletResponse response, ErrorResponse errorResponse
+    ) throws IOException {
+
+        new ObjectMapper().writeValue(response.getOutputStream(), errorResponse);
     }
 
     @Nullable
