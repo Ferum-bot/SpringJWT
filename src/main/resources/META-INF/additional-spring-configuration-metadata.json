@@ -1,0 +1,23 @@
+{
+  "properties":
+  [
+    {
+      "name": "api.token.access.duration",
+      "type": "java.lang.Long",
+      "defaultValue": 600000,
+      "description": "The duration of access token life."
+    },
+    {
+      "name": "api.token.refresh.duration",
+      "type": "java.lang.Long",
+      "defaultValue": 1800000,
+      "description": "The duration of refresh token life."
+    },
+    {
+      "name": "api.token.security-word",
+      "type": "java.lang.String",
+      "defaultValue": "Very-Secret-Word",
+      "description": "The secret word of encrypted algorithm."
+    }
+  ]
+}

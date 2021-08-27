@@ -1,7 +1,7 @@
 package com.ferum_bot.springjwt.security;
 
-import com.ferum_bot.springjwt.utils.JWTUtil;
 import com.ferum_bot.springjwt.utils.ResponseRequestUtil;
+import com.ferum_bot.springjwt.utils.jwt.JWTTokensComponent;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +18,12 @@ import java.util.ArrayList;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
 public class BaseAuthorizationFilter extends OncePerRequestFilter {
+
+    private final JWTTokensComponent jwtTokensComponent;
+
+    public BaseAuthorizationFilter(JWTTokensComponent jwtTokensComponent) {
+        this.jwtTokensComponent = jwtTokensComponent;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -36,9 +42,9 @@ public class BaseAuthorizationFilter extends OncePerRequestFilter {
             doAuthorizationFilter(request, response, filterChain);
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            response.setStatus(SC_FORBIDDEN);
             ResponseRequestUtil.addValueToResponse(response, "code", SC_FORBIDDEN);
             ResponseRequestUtil.addValueToResponse(response, "message", exception.getMessage());
+            response.setStatus(SC_FORBIDDEN);
         }
     }
 
@@ -46,7 +52,7 @@ public class BaseAuthorizationFilter extends OncePerRequestFilter {
         HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
     ) throws ServletException, IOException {
         var token = ResponseRequestUtil.getRequestAuthorizationToken(request);
-        var userData = JWTUtil.getUserDataFromAccessToken(token);
+        var userData = jwtTokensComponent.getUserDataFromAccessToken(token);
         var userNickname = userData.userNickname();
         var userRoles = userData.userRoles();
 

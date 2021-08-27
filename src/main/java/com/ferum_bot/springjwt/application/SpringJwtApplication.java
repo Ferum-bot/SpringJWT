@@ -1,6 +1,7 @@
 package com.ferum_bot.springjwt.application;
 
 import com.ferum_bot.springjwt.configurations.InitDataBaseConfig;
+import com.ferum_bot.springjwt.utils.jwt.JWTConfig;
 import com.ferum_bot.springjwt.controllers.MainController;
 import com.ferum_bot.springjwt.models.entities.Role;
 import com.ferum_bot.springjwt.models.entities.User;
@@ -19,6 +20,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Import(value = {
     InitDataBaseConfig.class,
     SecurityConfig.class,
+    JWTConfig.class,
     SecurityBeans.class,
     MainController.class,
     MainServiceImpl.class,

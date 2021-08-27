@@ -1,7 +1,7 @@
 package com.ferum_bot.springjwt.security;
 
-import com.ferum_bot.springjwt.utils.JWTUtil;
 import com.ferum_bot.springjwt.utils.ResponseRequestUtil;
+import com.ferum_bot.springjwt.utils.jwt.JWTTokensComponent;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,8 +19,13 @@ public class BaseAuthenticationFilter extends UsernamePasswordAuthenticationFilt
 
     private final AuthenticationManager authenticationManager;
 
-    public BaseAuthenticationFilter(AuthenticationManager authenticationManager) {
+    private final JWTTokensComponent jwtTokensComponent;
+
+    public BaseAuthenticationFilter(
+            AuthenticationManager authenticationManager, JWTTokensComponent jwtTokensComponent
+    ) {
         this.authenticationManager = authenticationManager;
+        this.jwtTokensComponent = jwtTokensComponent;
     }
 
     @Override
@@ -38,7 +43,7 @@ public class BaseAuthenticationFilter extends UsernamePasswordAuthenticationFilt
         HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication
     ) throws IOException, ServletException {
         var user = (User) authentication.getPrincipal();
-        var tokens = JWTUtil.getTokens(user);
+        var tokens = jwtTokensComponent.getTokens(user);
 
         ResponseRequestUtil.fillResponseWithTokens(response, tokens);
     }
